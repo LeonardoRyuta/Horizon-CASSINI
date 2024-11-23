@@ -1,10 +1,22 @@
-import './App.css';
+import { useEffect } from "react";
 
-function App() {
+export default function UploadData() {
+  const test = process.env.REACT_APP_TEST;
+  useEffect(() => {
+    console.log(test)
+  }, []);
+
   return (
     <body >
-      <div className="App">
-        <header className="App-header">
+      <div>
+        <button
+          onClick={() => {
+            console.log(test)
+          }}
+        >
+          test
+        </button>
+        <header>
           <h2 className="h2">
             Upload Your Data
           </h2>
@@ -35,5 +47,3 @@ function App() {
     </body>
   );
 }
-
-export default App;

@@ -4,17 +4,19 @@ pragma solidity ^0.8.13;
 contract EOValidator {
   struct Record {
     string hash;
+    string ipfsHash;
     uint256 timestamp;
     string metadata;
     address owner;
+
   }
 
   mapping(uint256 => Record) private records;
   uint256 private recordCount;
 
 
-  function addRecord(string memory dataHash, string memory metadata) public {
-    records[recordCount] = Record(dataHash, block.timestamp, metadata, msg.sender);  
+  function addRecord(string memory dataHash, string memory metadata, string memory ipfsHash) public {
+    records[recordCount] = Record(dataHash, ipfsHash, block.timestamp, metadata, msg.sender);  
     recordCount++;
   }
 
