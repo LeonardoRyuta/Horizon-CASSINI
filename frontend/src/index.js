@@ -7,14 +7,14 @@ import { BrowserRouter, Routes, Route } from "react-router";
 import "@rainbow-me/rainbowkit/styles.css";
 import { getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
-import { mainnet, sepolia } from "wagmi/chains";
+import { sepolia } from "wagmi/chains";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { UploadData, BrowseData, VerifyData } from "./pages";
 
 const config = getDefaultConfig({
   appName: "Horizon",
   projectId: "5059a053c04856038d11dde6e9e25433",
-  chains: [mainnet, sepolia],
+  chains: [sepolia],
   ssr: true,
 });
 
@@ -29,8 +29,8 @@ root.render(
           <BrowserRouter>
             <Routes>
               <Route element={<Layout />}>
-                <Route index element={<UploadData />} />
-                <Route path="browse" element={<BrowseData />} />
+                <Route index element={<BrowseData />} />
+                <Route path="upload" element={<UploadData />} />
                 <Route path="verify" element={<VerifyData />} />
               </Route>
             </Routes>

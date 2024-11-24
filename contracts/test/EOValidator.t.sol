@@ -12,16 +12,27 @@ contract EOValidatorTest is Test {
     }
 
     function test_AddRecord() public {
-        validator.addRecord("0x1234", "metadata", "ipfsHash");
+        EOValidator.MetaData memory metaData = EOValidator.MetaData("title", "description");
+        validator.addRecord("0x1234", metaData, "ipfsHash");
         EOValidator.Record memory record = validator.getRecord(0);
         assertEq(record.hash, "0x1234");
-        assertEq(record.metadata, "metadata");
+        assertEq(record.metadata.title, "title");
+        assertEq(record.metadata.description, "description");
         assertEq(record.ipfsHash, "ipfsHash");
         assertEq(record.owner, address(this));
     }
 
     function test_VerifyRecord() public {
-        validator.addRecord("0x1234", "metadata", "ipfsHash");
+        EOValidator.MetaData memory metaData = EOValidator.MetaData("title", "description");
+        validator.addRecord("0x1234", metaData, "ipfsHash");
         assert(validator.verifyRecord(0, "0x1234"));
+    }
+
+    function test_VerifyRecordNoId() public {
+        EOValidator.MetaData memory metaData = EOValidator.MetaData("title", "description");
+        validator.addRecord("0x1234", metaData, "ipfsHash");
+        validator.addRecord("0x5678", metaData, "ipfsHash");
+        validator.addRecord("0x90ab", metaData, "ipfsHash");
+        assert(validator.verifyRecordNoId("0x5678"));
     }
 }

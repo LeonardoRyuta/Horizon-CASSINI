@@ -1,18 +1,23 @@
 import { useEffect, useState } from "react";
-import { pinata, hashFile, EOValidatorABI } from "../utils"
-import { useWriteContract, useWaitForTransactionReceipt, useAccount } from "wagmi";
+import { pinata, hashFile, EOValidatorABI } from "../utils";
+import {
+  useWriteContract,
+  useWaitForTransactionReceipt,
+  useAccount,
+  serialize
+} from "wagmi";
 
 export default function UploadData() {
   const [file, setFile] = useState(null);
   const [metadata, setMetadata] = useState({ title: "", description: "" });
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const { data: hash, writeContract } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({hash,})
+  const { data: hash, writeContract, writeContractAsync } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } =
+    useWaitForTransactionReceipt({ hash });
   const account = useAccount();
 
-  const submitData = async (e) => {
-    e.preventDefault();
+  const submitData = async () => {
     if (!file || !metadata.title || !metadata.description) {
       setErrorMessage("Please fill all the fields");
       return;
@@ -20,25 +25,25 @@ export default function UploadData() {
 
     setLoading(true);
 
-    // const upload = await pinata.upload.file(file)
+    const upload = await pinata.upload.file(file)
 
-    // if (!upload.IpfsHash) {
-    //   setErrorMessage("Error uploading file");
-    //   setLoading(false);
-    //   return;
-    // }
+    if (!upload.IpfsHash) {
+      setErrorMessage("Error uploading file");
+      setLoading(false);
+      return;
+    }
 
     const hash = await hashFile(file);
     console.log(hash);
 
-    writeContract({
-      address: "0x8Fd14fBf37352888EBfb5e40d236dEd12360D6b7",
+    await writeContractAsync({
+      address: `${process.env.REACT_APP_SC_ADDRESS}`,
       abi: EOValidatorABI,
       functionName: "addRecord",
-      args: [hash, JSON.stringify(metadata), "0x"],
-    })
+      args: [hash, metadata, upload.IpfsHash],
+    });
 
-    setLoading(false);  
+    setLoading(false);
     // console.log(upload)
   };
 
@@ -47,10 +52,14 @@ export default function UploadData() {
   }, [file, metadata.title, metadata.description]);
 
   useEffect(() => {
-    console.log(isConfirmed)
-    console.log(isConfirming)
-    console.log(hash)
-  }, [isConfirmed, isConfirming, hash])
+    console.log(isConfirmed);
+    console.log(isConfirming);
+    console.log(hash);
+  }, [isConfirmed, isConfirming, hash]);
+
+  useEffect(() => {
+    console.log(file);
+  }, [file]);
 
   return (
     <div className="w-full p-2 min-h-96">
@@ -67,7 +76,7 @@ export default function UploadData() {
             <p className="mt-10 ml-5 text-blue-400 ">Upload your file here:</p>
             <input
               type="file"
-              className="file-input file-input-bordered w-full max-w-xs mt-5 ml-5 "
+              className="file-input file-input-bordered w-full max-w-xs mt-5 ml-5"
               onChange={(e) => setFile(e.target.files[0])}
             />
           </div>
@@ -78,6 +87,7 @@ export default function UploadData() {
                 type="text"
                 className="grow"
                 placeholder="Title"
+                value={metadata.title}
                 onChange={(e) =>
                   setMetadata({ ...metadata, title: e.target.value })
                 }
@@ -88,6 +98,7 @@ export default function UploadData() {
                 type="text"
                 className="grow"
                 placeholder="Description"
+                value={metadata.description}
                 onChange={(e) =>
                   setMetadata({ ...metadata, description: e.target.value })
                 }
@@ -97,7 +108,15 @@ export default function UploadData() {
           <div className="w-full flex justify-center items-center mt-10 flex-col gap-2">
             <button
               className="btn btn-outline btn-wide text-blue-400 mt-5 max-w-sm flex justify-center items-center "
-              onClick={(e) => {submitData(e)}}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.returnValue = false;
+                submitData();
+              }}
+              onSubmit={(e) => {
+                e.preventDefault();
+              }}
             >
               Submit data
             </button>

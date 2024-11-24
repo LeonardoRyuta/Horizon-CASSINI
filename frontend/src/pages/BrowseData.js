@@ -1,6 +1,91 @@
+import { useReadContract } from "wagmi";
+import { EOValidatorABI } from "../utils";
+import { useEffect, useState } from "react";
+import { formatUnits } from "viem";
+import { X } from "lucide-react";
+
 export default function BrowseData() {
+  const [records, setRecords] = useState([]);
+  const [modalShow, setModalShow] = useState(null);
+
+  const result = useReadContract({
+    abi: EOValidatorABI,
+    address: `${process.env.REACT_APP_SC_ADDRESS}`,
+    functionName: "getRecords",
+  });
+
+  useEffect(() => {
+    if (result.data) {
+      setRecords(result.data);
+      console.log(result.data);
+    }
+  }, [result.data]);
+
+  const Modal = (record) => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-40">
+      <div className="bg-zinc-800 p-5 rounded-md relative min-h-96 min-w-96 flex flex-col">
+        <div
+          className="absolute top-0 right-0 p-2 cursor-pointer z-50"
+          onClick={() => {
+            setModalShow(null);
+          }}
+        >
+          <X color="#000000" />
+        </div>
+        <h1
+          className="
+            text-3xl
+            font-bold
+            text-blue-400
+            mt-5
+            text-center
+          "
+        >
+          {record?.metadata.title}
+        </h1>
+        <div className="h-full flex-1 flex flex-col mt-4">
+          <p className="text-sm">
+            Date:{" "}
+            {new Date(Number(record?.timestamp) * 1000).toLocaleDateString()}
+          </p>
+          <p className="text-sm">Uploader: {record?.owner}</p>
+          <div
+            className="flex-1 flex flex-col mt-6"
+            style={{ overflowY: "auto" }}
+          >
+            <p className="text-lg">{record?.metadata.description}</p>
+          </div>
+        </div>
+        <div className="flex justify-between">
+          <a
+            href={`https://nftstorage.link/ipfs/${record?.ipfsHash}`}
+            target="_blank"
+            rel="noreferrer"
+            download
+          >
+            <button className="bg-blue-500 text-white p-2 rounded">
+              Download
+            </button>
+          </a>
+          <button
+            onClick={() => {
+              setModalShow(null);
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const showModal = (record) => {
+    setModalShow(Modal(record));
+  };
+
   return (
     <div className="flex justify-center items-center flex-col w-full">
+      {modalShow}
       <h1 className="flex justify-center items-center p-2 rounded-md text-2xl font-bold text-blue-400 mt-5">
         Browse Available Data
       </h1>
@@ -13,57 +98,34 @@ export default function BrowseData() {
               <th>Title</th>
               <th>Description</th>
               <th>Date</th>
-              <th>Download</th>
               <th>Verify</th>
-
             </tr>
           </thead>
           <tbody>
-            {/* row 1 */}
-            <tr>
-              <th>1</th>
-              <td>Title1</td>
-              <td>Description1</td>
-              <td>Date1</td>
-              <td></td>
-
-            </tr>
-            {/* row 2 */}
-            <tr>
-              <th>2</th>
-              <td>Title2</td>
-              <td>Descripiton2</td>
-              <td>Date2</td>
-            </tr>
-            {/* row 3 */}
-            <tr>
-              <th>3</th>
-              <td>Title3</td>
-              <td>Descripiton3</td>
-              <td>Date3</td>
-            </tr>
-            {/* row 4 */}
-            <tr>
-              <th>4</th>
-              <td>Title4</td>
-              <td>Descripiton4</td>
-              <td>Date4</td>
-            </tr>{/* row 5 */}
-            <tr>
-              <th>5</th>
-              <td>Title5</td>
-              <td>Descripiton5</td>
-              <td>Date5</td>
-            </tr>{/* row 6 */}
-            <tr>
-              <th>6</th>
-              <td>Title6</td>
-              <td>Descripiton6</td>
-              <td>Date6</td>
-            </tr>
+            {records.map((record, index) => (
+              <tr
+                key={index}
+                className="hover cursor-pointer"
+                onClick={() => {
+                  showModal(record);
+                }}
+              >
+                <th>{index + 1}</th>
+                <td>{record.metadata.title}</td>
+                <td>{record.metadata.description}</td>
+                <td>
+                  {new Date(
+                    Number(record.timestamp) * 1000
+                  ).toLocaleDateString()}
+                </td>
+                <td>
+                  <a href={`/verify?hash=${record.hash}`}>Verify</a>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
     </div>
-  )
+  );
 }
