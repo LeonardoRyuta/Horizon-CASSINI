@@ -8,6 +8,7 @@ contract EOValidator {
   }
 
   struct Record {
+    uint256 id;
     string hash;
     string ipfsHash;
     uint256 timestamp;
@@ -18,10 +19,12 @@ contract EOValidator {
   mapping(uint256 => Record) private records;
   uint256 private recordCount;
 
+  event RecordAdded(uint256 id, string hash, string ipfsHash, uint256 timestamp, MetaData metadata, address owner);
 
   function addRecord(string memory dataHash, MetaData memory metadata, string memory ipfsHash) public {
-    records[recordCount] = Record(dataHash, ipfsHash, block.timestamp, metadata, msg.sender);  
+    records[recordCount] = Record(recordCount, dataHash, ipfsHash, block.timestamp, metadata, msg.sender);
     recordCount++;
+    emit RecordAdded(recordCount - 1, dataHash, ipfsHash, block.timestamp, metadata, msg.sender);
   }
 
   function verifyRecord(uint256 recordId, string memory dataHash) public view returns (bool) {
@@ -39,6 +42,15 @@ contract EOValidator {
 
   function getRecord(uint256 recordId) public view returns (Record memory) {
     return records[recordId];
+  }
+
+  function getRecordByHash(string memory dataHash) public view returns (Record memory) {
+    for (uint256 i = 0; i < recordCount; i++) {
+      if (keccak256(abi.encodePacked(records[i].hash)) == keccak256(abi.encodePacked(dataHash))) {
+        return records[i];
+      }
+    }
+    revert("Record not found");
   }
 
   function getRecords() public view returns (Record[] memory) {

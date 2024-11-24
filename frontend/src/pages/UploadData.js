@@ -4,7 +4,7 @@ import {
   useWriteContract,
   useWaitForTransactionReceipt,
   useAccount,
-  serialize
+  serialize,
 } from "wagmi";
 
 export default function UploadData() {
@@ -25,7 +25,7 @@ export default function UploadData() {
 
     setLoading(true);
 
-    const upload = await pinata.upload.file(file)
+    const upload = await pinata.upload.file(file);
 
     if (!upload.IpfsHash) {
       setErrorMessage("Error uploading file");
@@ -63,68 +63,72 @@ export default function UploadData() {
 
   return (
     <div className="w-full p-2 min-h-96">
-      {loading ? (
+      {loading || isConfirming ? (
         <div className="flex justify-center items-center h-96">
           <span className="loading loading-dots loading-lg"></span>
         </div>
       ) : (
-        <>
-          <h1 className="flex justify-center items-center p-2 rounded-md text-2xl font-bold text-blue-400 mt-5">
+        <div className="flex justify-center items-center flex-col">
+          <h1 className="p-2 rounded-md text-2xl font-bold text-blue-400 mt-5">
             Upload your data
           </h1>
-          <div>
-            <p className="mt-10 ml-5 text-blue-400 ">Upload your file here:</p>
-            <input
-              type="file"
-              className="file-input file-input-bordered w-full max-w-xs mt-5 ml-5"
-              onChange={(e) => setFile(e.target.files[0])}
-            />
-          </div>
-          <p className="mt-16 ml-5 text-blue-400 ">Metadata:</p>
-          <div className="flex flex-col gap-4 mt-4">
-            <label className="input input-bordered flex w-full max-w-xs ml-5">
+          <div className="flex flex-col mt-4">
+            <div>
+              <p className="mb-2 text-blue-400 ">
+                Upload your file here:
+              </p>
               <input
-                type="text"
-                className="grow"
-                placeholder="Title"
-                value={metadata.title}
-                onChange={(e) =>
-                  setMetadata({ ...metadata, title: e.target.value })
-                }
+                type="file"
+                className="file-input file-input-bordered w-full max-w-xs"
+                onChange={(e) => setFile(e.target.files[0])}
               />
-            </label>
-            <label className="input input-bordered flex w-full max-w-xs ml-5">
-              <input
-                type="text"
-                className="grow"
-                placeholder="Description"
-                value={metadata.description}
-                onChange={(e) =>
-                  setMetadata({ ...metadata, description: e.target.value })
-                }
-              />
-            </label>
+            </div>
+            <p className="mt-10 text-blue-400 ">Metadata:</p>
+            <div className="flex flex-col gap-4 mt-4">
+              <label className="input input-bordered flex w-full max-w-xs">
+                <input
+                  type="text"
+                  className="grow"
+                  placeholder="Title"
+                  value={metadata.title}
+                  onChange={(e) =>
+                    setMetadata({ ...metadata, title: e.target.value })
+                  }
+                />
+              </label>
+              <label className="input input-bordered flex w-full max-w-xs">
+                <input
+                  type="text"
+                  className="grow"
+                  placeholder="Description"
+                  value={metadata.description}
+                  onChange={(e) =>
+                    setMetadata({ ...metadata, description: e.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div className="w-full flex justify-center items-center mt-10 flex-col gap-2">
+              <button
+                className="btn btn-outline btn-wide text-blue-400 mt-5 max-w-sm flex justify-center items-center "
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.returnValue = false;
+                  submitData();
+                }}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                }}
+              >
+                Submit data
+              </button>
+              {errorMessage && (
+                <div className="text-red-500 text-center">{errorMessage}</div>
+              )}
+            </div>
           </div>
-          <div className="w-full flex justify-center items-center mt-10 flex-col gap-2">
-            <button
-              className="btn btn-outline btn-wide text-blue-400 mt-5 max-w-sm flex justify-center items-center "
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                e.returnValue = false;
-                submitData();
-              }}
-              onSubmit={(e) => {
-                e.preventDefault();
-              }}
-            >
-              Submit data
-            </button>
-            {errorMessage && (
-              <div className="text-red-500 text-center">{errorMessage}</div>
-            )}
-          </div>
-        </>
+        </div>
       )}
     </div>
   );

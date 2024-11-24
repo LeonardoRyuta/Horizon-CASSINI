@@ -3,6 +3,7 @@ import { EOValidatorABI } from "../utils";
 import { useEffect, useState } from "react";
 import { formatUnits } from "viem";
 import { X } from "lucide-react";
+import { Link } from "react-router";
 
 export default function BrowseData() {
   const [records, setRecords] = useState([]);
@@ -94,7 +95,7 @@ export default function BrowseData() {
           {/* head */}
           <thead>
             <tr>
-              <th></th>
+              <th>Id</th>
               <th>Title</th>
               <th>Description</th>
               <th>Date</th>
@@ -110,7 +111,7 @@ export default function BrowseData() {
                   showModal(record);
                 }}
               >
-                <th>{index + 1}</th>
+                <th>{Number(record.id)}</th>
                 <td>{record.metadata.title}</td>
                 <td>{record.metadata.description}</td>
                 <td>
@@ -118,8 +119,10 @@ export default function BrowseData() {
                     Number(record.timestamp) * 1000
                   ).toLocaleDateString()}
                 </td>
-                <td>
-                  <a href={`/verify?hash=${record.hash}`}>Verify</a>
+                <td onClick={(e) => {
+                  e.stopPropagation();
+                }}>
+                  <Link to={`/verify?hash=${record.hash}`}>Verify</Link>
                 </td>
               </tr>
             ))}
